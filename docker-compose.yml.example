@@ -1,0 +1,11 @@
+version: "3.1"
+
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - /app/node_modules
+      - ./:/app
+      - TELEGRAM_BOT_TOKEN=""
