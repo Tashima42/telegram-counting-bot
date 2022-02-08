@@ -21,13 +21,13 @@ module.exports = function({ yunExpress }) {
     })
   }
   function help() {
-    _helpMessage()
+    _helpMessage(/\/help/)
   }
   function start() {
-    _helpMessage()
+    _helpMessage(/\/start/)
   }
-  function _helpMessage() {
-    bot.onText(/\/start/, (msg) => {
+  function _helpMessage(match) {
+    bot.onText(match, (msg) => {
       console.log(msg)
       const chatId = msg.chat.id
       const name = msg.from.first_name
