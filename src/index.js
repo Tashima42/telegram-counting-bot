@@ -1,5 +1,5 @@
-const { telegramBot, yunExpress } = require("./utils/index")
+const { telegramBot } = require("./utils/index")
 
-telegramBot.fetchPackage()
+telegramBot.blessing2()
 telegramBot.help()
 telegramBot.start()

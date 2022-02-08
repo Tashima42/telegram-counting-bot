@@ -5,37 +5,33 @@ module.exports = function({ yunExpress }) {
   const bot = new TelegramBot(token, { polling: true })
 
   return Object.freeze({
-    fetchPackage,
+    blessing2,
     help,
     start,
   })
-  async function fetchPackage() {
-    bot.onText(/\/fetch/, async (msg, match) => {
+  async function blessing2() {
+    await fetchPackage({ match: /\/blessing2/, order: "YT2203821266034482" })
+  }
+  async function fetchPackage({ match, order}) {
+    bot.onText(match, async (msg) => {
       const chatId = msg.chat.id
-      bot.sendMessage(chatId, `Fetching package YT2203821266034482\nPlease wait...`)
-      const packageLastStatus = await yunExpress.queryOrders(['YT2203821266034482'])
-      bot.sendMessage(chatId, treatResult(packageLastStatus))
+      bot.sendMessage(chatId, `Fetching package ${order}\nPlease wait...`)
+      const packageLastStatus = await yunExpress.queryOrder({ order })
+      bot.sendMessage(chatId, packageLastStatus)
     })
   }
   function help() {
-    bot.onText(/\/help/, (msg, match) => {
-      console.log(msg)
-      const chatId = msg.chat.id
-      const name = msg.from.first_name
-      bot.sendMessage(chatId, `Hi, ${name}.\nTry /fetch`)
-    })
+    _helpMessage()
   }
   function start() {
-    bot.onText(/\/start/, (msg, match) => {
+    _helpMessage()
+  }
+  function _helpMessage() {
+    bot.onText(/\/start/, (msg) => {
       console.log(msg)
       const chatId = msg.chat.id
       const name = msg.from.first_name
-      bot.sendMessage(chatId, `Hi, ${name}.\nTry /fetch`)
+      bot.sendMessage(chatId, `Hi, ${name}.\nTry /help or /blessing2`)
     })
-  }
-  function treatResult(result) {
-    const lastEvent = result.ResultList[0].TrackInfo.LastTrackEvent
-    const msg = `Status: ${lastEvent.ProcessContent}\nLocation: ${lastEvent.ProcessLocation}\nDate: ${lastEvent.ProcessDate}`
-    return msg
   }
 }

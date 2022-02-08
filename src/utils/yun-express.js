@@ -20,27 +20,23 @@ const httpRequest = axios.create({
 
 module.exports = function () {
   return Object.freeze({
-    queryOrders
+    queryOrder
   })
-  async function queryOrders(orders) {
+  async function queryOrder({ order, getRaw = false}) {
     try {
     const result = await httpRequest({
       method: 'POST',
       url: '/Query',
-      data: { NumberList: orders, CaptchaVerification: "" }    
+      data: { NumberList: [order], CaptchaVerification: "" }    
     })
-    return result.data
+    return getRaw ? result.data : _treatResult(result.data)
     } catch(error) {
       return error.response.data
     }
   }
+  function _treatResult(result) {
+    const lastEvent = result.ResultList[0].TrackInfo.LastTrackEvent
+    const msg = `Status: ${lastEvent.ProcessContent}\nLocation: ${lastEvent.ProcessLocation}\nDate: ${lastEvent.ProcessDate}`
+    return msg
+  }
 }
-
-/*
-queryOrders(['YT2203821266034482'])
-  .then(a => console.log(a))
-  .catch(error => console.error({
-    request: error.request, 
-    response: error.response
-  }))
-*/
