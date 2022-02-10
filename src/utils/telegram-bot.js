@@ -15,9 +15,12 @@ module.exports = function({ yunExpress }) {
   async function fetchPackage({ match, order}) {
     bot.onText(match, async (msg) => {
       const chatId = msg.chat.id
+      let waitMessageId
       bot.sendMessage(chatId, `Fetching package ${order}\nPlease wait...`)
+        .then(message => waitMessageId = message.message_id)
       const packageLastStatus = await yunExpress.queryOrder({ order })
       bot.sendMessage(chatId, packageLastStatus)
+        .then(message => bot.deleteMessage(chatId, waitMessageId))
     })
   }
   function help() {
