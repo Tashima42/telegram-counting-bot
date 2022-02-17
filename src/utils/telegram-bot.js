@@ -6,11 +6,15 @@ module.exports = function({ yunExpress }) {
 
   return Object.freeze({
     blessing2,
+    btr5,
     help,
     start,
   })
   async function blessing2() {
     await fetchPackage({ match: /\/blessing2/, order: "YT2203821266034482" })
+  }
+  async function btr5() {
+    await fetchPackage({ match: /\/btr5/, order: "YT2204121266018255" })
   }
   async function fetchPackage({ match, order}) {
     bot.onText(match, async (msg) => {
