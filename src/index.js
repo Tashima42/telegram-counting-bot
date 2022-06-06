@@ -1,6 +1,16 @@
-const { telegramBot } = require("./utils/index")
+import {SqliteDatabase} from "./repositories/index.js";
+import {CounterRepository} from "./repositories/CounterRepository.js"
+import telegramBotBuilder from "./utils/telegram-bot.js"
 
-telegramBot.blessing2()
-telegramBot.btr5()
-telegramBot.help()
-telegramBot.start()
+main()
+
+async function main() {
+  const sqliteDatabase = new SqliteDatabase();
+  await sqliteDatabase.open();
+  const counterRepository = new CounterRepository(sqliteDatabase);
+  const telegramBot = telegramBotBuilder({counterRepository});
+
+  for (const command of Object.keys(telegramBot)) {
+    telegramBot[command]();
+  }
+}

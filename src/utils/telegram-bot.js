@@ -1,30 +1,49 @@
-const TelegramBot = require("node-telegram-bot-api")
+import TelegramBot from "node-telegram-bot-api"
 
-module.exports = function({ yunExpress }) {
+export default function ({counterRepository}) {
   const token = process.env.TELEGRAM_BOT_TOKEN
-  const bot = new TelegramBot(token, { polling: true })
+  const bot = new TelegramBot(token, {polling: true})
 
   return Object.freeze({
-    blessing2,
-    btr5,
     help,
     start,
+    getCount,
+    increaseCount,
+    decreaseCount
   })
-  async function blessing2() {
-    await fetchPackage({ match: /\/blessing2/, order: "YT2203821266034482" })
-  }
-  async function btr5() {
-    await fetchPackage({ match: /\/btr5/, order: "YT2204121266018255" })
-  }
-  async function fetchPackage({ match, order}) {
-    bot.onText(match, async (msg) => {
+  async function increaseCount() {
+    bot.onText(/\/increase/, async (msg) => {
+      const userId = msg.from.id
       const chatId = msg.chat.id
-      let waitMessageId
-      bot.sendMessage(chatId, `Fetching package ${order}\nPlease wait...`)
-        .then(message => waitMessageId = message.message_id)
-      const packageLastStatus = await yunExpress.queryOrder({ order })
-      bot.sendMessage(chatId, packageLastStatus)
-        .then(message => bot.deleteMessage(chatId, waitMessageId))
+      const name = msg.from.first_name
+      const count = await _getCountOrCreate(userId)
+      const newCount = count + 1
+      await counterRepository.changeCount({userId, value: newCount})
+      bot.sendMessage(chatId, `${name}, your new count is ${newCount}`)
+    })
+  }
+  async function decreaseCount() {
+    bot.onText(/\/decrease/, async (msg) => {
+      const userId = msg.from.id
+      const chatId = msg.chat.id
+      const name = msg.from.first_name
+      const count = await _getCountOrCreate(userId)
+      if (count <= 0) {
+        bot.sendMessage(chatId, `${name}, your count is already ${count}, I can't decrease it anymore`)
+        return
+      }
+      const newCount = count - 1
+      await counterRepository.changeCount({userId, value: newCount})
+      bot.sendMessage(chatId, `${name}, your new count is ${newCount}`)
+    })
+  }
+  async function getCount() {
+    bot.onText(/\/count/, async (msg) => {
+      const userId = msg.from.id
+      const chatId = msg.chat.id
+      const name = msg.from.first_name
+      const count = await _getCountOrCreate(userId)
+      bot.sendMessage(chatId, `${name}'s current count: ${count}`)
     })
   }
   function help() {
@@ -38,7 +57,20 @@ module.exports = function({ yunExpress }) {
       console.log(msg)
       const chatId = msg.chat.id
       const name = msg.from.first_name
-      bot.sendMessage(chatId, `Hi, ${name}.\nTry /help or /blessing2`)
+      bot.sendMessage(chatId, `Hi, ${name}.\nTry /getCount, /increase or /decrease`)
     })
+  }
+  async function _getCountOrCreate(userId) {
+    try {
+      const count = await counterRepository.getByUserId(userId)
+      console.log({count})
+      if (count === null) {
+        await counterRepository.createCounter(userId)
+        return 0
+      }
+      return count
+    } catch (error) {
+      console.log(error)
+    }
   }
 }
